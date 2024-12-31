@@ -1,106 +1,144 @@
-const os = require("os") ;
-const file = require("fs") ;
+const fs = require("fs") ;
+const crypto = require('crypto');
 
+process.env.UV_THREADPOOL_SIZE = 3 ;
 
-/********************* os info *********************/
-// const cpuCore = os.cpus().length ;
-// const architec = os.arch() ;
-// const operatingSystem = os.type() ;
-// const totalRam = os.totalmem() /( 1000 ** 3 );
-// const freeRam = os.freemem()  /( 1000 ** 3 ) ;
-// const cpuModel = os.cpus()[0].model ;
-// const cpuSpeed = os.cpus()[0].speed ;
+/*
+setTimeout(()=>{
+     console.log("time interval fucntion 1")
+} , 0) ;
 
-
-// console.log("os info : " , {
-//      cpuCore : cpuCore ,
-//      architec ,
-//      operatingSystem ,
-//      totalRam ,
-//      freeRam ,
-//      cpuModel ,
-//      cpuSpeed
-// })
-
-
-/*************  storage info **********************/
-// const si = require("systeminformation") ;
-
-// async function getSystemInfo(){
-//       try{
-//         const diskData = await si.diskLayout() ;
-//         const memoryData = await si.mem() ;
-//         const cpuData = await si.cpu() ;
-
-//         const batteryData = await si.battery() ;
-//         const networkData = await si.networkInterfaces() ;
-
-//        console.log("system info : " , {
-//           diskData ,
-//           memoryData ,
-//           cpuData ,
-//           batteryData ,
-//           networkData
-//        }) ;
-
-//       }catch(error){
-//           console.log("error : " , error.message) ;
-//       }
-// }
-
-// getSystemInfo() ;
-
-/************************* http server *********************************** */
-
-const http =  require("http") ;
-const server = http.createServer((req , res) => {
-      
-      const loginTime = new Date(Date.now()).toLocaleString() ;
-
-      file.appendFile("data.txt" , `use logined at ${loginTime}\n` ,  (err , succ)=> {
-         if(err)
-          {
-             console.log("err  : " , err) ;
-          }
-         else{
-             console.log("suceess : " , succ) ;
-         }
-      }) 
-
-      res.statusCode = 200 ;
-      res.end("Hiii") ;
+setImmediate(()=>{
+     console.log("immediate function 1");
 })
 
-server.listen(8080 , ()=>{
-      console.log("backend server is running.....") ;
+console.log("top level code") ;
+
+output -->
+  top level code
+  time interval function 1
+  immediate function 1
+*/
+
+/*
+setTimeout(()=>{
+   console.log("time interval fucntion 1")
+} , 0) ;
+
+setImmediate(()=>{
+   console.log("immediate function 1");
 })
 
-/*********************  file handling ************* */
+output --> 
 
-//blocking .....
-const bData = file.readFileSync("data.txt" , "utf-8") ;
-console.log("file Data  : ",  bData) ;
+  immediate function 1
+  time interval function 1
 
+*/
 
-//non blocking... 
-file.readFile("data.txt" , "utf-8" , (err , res)=>{
-      if(err)
-         {
-            console.log("error happen while reading the file") ;
-         }
-    else{
-         console.log("file info :  " , res) ;
-    }
+/*
+setTimeout(()=>{
+   console.log("time interval fucntion 1")
+} , 0) ;
+
+setImmediate(()=>{
+   console.log("immediate function 1");
 })
 
-file.open("data.txt" , "r" , (err , fileData) => {
-    if(err)
-         {
-            console.log("something went wrong while opening the file..");
-         }
-    else{
-         console.log("file is opened...");
-    }
-}) ;
+fs.readFile('data.txt' , 'utf-8' , ()=>{
+   console.log('IO polling finish');
+
+   setTimeout(() => {
+       console.log('timer interval function 2' ) ;
+   } , 0) ;
+
+   setTimeout(() => {
+      console.log('time interval function 3') ;
+   } , 5*1000) ;
+
+})
+
+console.log("top level code") ;
+
+output :- 
+top level code
+time interval fucntion 1
+immediate function 1
+IO polling finish
+timer interval function 2
+time interval function 3
+
+*/
 
 
+
+const start = Date.now() ;
+
+setTimeout(()=>{
+   console.log("time interval fucntion 1")
+} , 0) ;
+
+setImmediate(()=>{
+   console.log("immediate function 1");
+})
+
+fs.readFile('data.txt' , 'utf-8' , ()=>{
+   console.log('IO polling finish');
+
+   setTimeout(() => {
+       console.log('timer interval function 2' ) ;
+   } , 0) ;
+
+   setTimeout(() => {
+      console.log('time interval function 3') ;
+   } , 5*1000) ;
+
+   setImmediate(() => {
+      console.log("set immediate function 2") ;
+   })
+
+   //cpu intensive work...
+   crypto.pbkdf2('password' , 'salt' , 10000 , 1024 , 'sha512' , ()=>{
+       console.log('password 1 Done' , Date.now()  - start) ;
+   } )
+
+   crypto.pbkdf2('password' , 'salt' , 10000 , 1024 , 'sha512' , ()=>{
+      console.log('password 2 Done' , Date.now()  - start) ;
+  } )
+
+  crypto.pbkdf2('password' , 'salt' , 10000 , 1024 , 'sha512' , ()=>{
+   console.log('password 3 Done' , Date.now()  - start) ;
+ } )
+
+ crypto.pbkdf2('password' , 'salt' , 10000 , 1024 , 'sha512' , ()=>{
+   console.log('password 4 Done' , Date.now()  - start) ;
+ } )
+
+ crypto.pbkdf2('password' , 'salt' , 10000 , 1024 , 'sha512' , ()=>{
+   console.log('password 5 Done' , Date.now()  - start) ;
+ } )
+
+ crypto.pbkdf2('password' , 'salt' , 10000 , 1024 , 'sha512' , ()=>{
+   console.log('password 6 Done' , Date.now()  - start) ;
+ } )
+
+ crypto.pbkdf2('password' , 'salt' , 10000 , 1024 , 'sha512' , ()=>{
+   console.log('password 7 Done' , Date.now()  - start) ;
+ } )
+
+ crypto.pbkdf2('password' , 'salt' , 10000 , 1024 , 'sha512' , ()=>{
+   console.log('password 8 Done' , Date.now()  - start) ;
+ } )
+
+
+})
+
+console.log("top level code") ;
+
+// top level code
+// time interval fucntion 1
+// immediate function 1
+// IO polling finish
+// set immediate function 2
+// timer interval function 2
+// time interval function 3
